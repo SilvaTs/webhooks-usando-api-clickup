@@ -38,12 +38,8 @@ class ClickUpClient:
     def get_task_details(self):
         """Get details of a specific task"""
         headers = {
-            "Authorization": self.api_token,  # Remove Bearer prefix, use token directly
-            "accept": "application/json"      # Match curl headers exactly
-        }
-        headers = {
-            "Authorization": f"Bearer {self.api_token}",  # Add Bearer prefix
-            "Content-Type": "application/json"
+            "Authorization": self.api_token,  # Use token directly as in test_authentication
+            "accept": "application/json"      # Match successful format
         }
 
         try:
