@@ -187,4 +187,3 @@ TASK_ID_TO_MONITOR = os.getenv('TASK_ID_TO_MONITOR', "86a6u")
 
 Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
 ```
-
