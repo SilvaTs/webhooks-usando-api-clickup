@@ -4,8 +4,17 @@ from dotenv import load_dotenv
 import logging
 import json
 
-logging.basicConfig(level=logging.INFO)
+# No início do arquivo, após os imports
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(message)s',  # Simplifica o formato para mostrar apenas a mensagem
+    handlers=[
+        logging.StreamHandler()
+    ]
+)
+# Configurar o logger para não truncar mensagens longas
 logger = logging.getLogger(__name__)
+logger.propagate = False
 
 class ClickUpClient:
     def __init__(self):
@@ -66,10 +75,19 @@ class ClickUpClient:
             logger.info(f"Código de status da resposta: {response.status_code}")
             
             response.raise_for_status()
-            # Formatando o JSON com aspas duplas e indentação correta
-            formatted_json = json.dumps(response.json(), indent=2, ensure_ascii=False, separators=(',', ': '))
-            logger.info(f"Detalhes da tarefa:\n{formatted_json}")
-            return response.json()
+            # Formatando o JSON completo
+            task_data = response.json()
+            formatted_json = json.dumps(
+                task_data,
+                indent=2,
+                ensure_ascii=False,
+                separators=(',', ': '),
+                default=str  # Garante que todos os tipos sejam serializados
+            )
+            # Usar print para garantir que todo o conteúdo seja exibido
+            print("\nDetalhes completos da tarefa:")
+            print(formatted_json)
+            return task_data
         except requests.exceptions.RequestException as e:
             logger.error(f"Error fetching task details: {e}")
             raise
@@ -78,13 +96,15 @@ if __name__ == "__main__":
     try:
         client = ClickUpClient()
         
-        # Test authentication first
         if not client.test_authentication():
             logger.error("Falha na autenticação. Verifique seu token API.")
             exit(1)
             
         logger.info("Autenticação bem sucedida. Buscando detalhes da tarefa...")
         task_details = client.get_task_details()
+        # Não precisamos logar novamente aqui pois já foi exibido em get_task_details
+    except Exception as e:
+        logger.error(f"Falha ao obter detalhes da tarefa: {e}")
         # Formatando o último log também
         formatted_details = json.dumps(task_details, indent=2, ensure_ascii=False, separators=(',', ': '))
         logger.info(f"Detalhes da tarefa obtidos com sucesso:\n{formatted_details}")
