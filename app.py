@@ -5,38 +5,31 @@ from typing import Dict, Any
 import os
 from dotenv import load_dotenv
 
-# Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
 
-# Load environment variables
 load_dotenv()
 
 app = FastAPI(title="ClickUp Webhook Processor")
 
-# Get task ID from environment variable or use default
-TASK_ID_TO_MONITOR = os.getenv('TASK_ID_TO_MONITOR', "86a6u6bck")
+TASK_ID_TO_MONITOR = os.getenv('TASK_ID_TO_MONITOR', "86a6u")
 
 class WebhookProcessor:
     @staticmethod
     async def process_event(payload: Dict[Any, Any]) -> None:
-        """Process the webhook event"""
         task_data = payload.get("task", {})
         event_type = payload.get("event")
         
         logger.info(f"Processing {event_type} event for task {task_data.get('id')}")
-        # Add your event processing logic here
-        # For example: updating database, sending notifications, etc.
 
 @app.post("/webhook")
 async def webhook_listener(request: Request):
     try:
         payload = await request.json()
         
-        # Validate payload
         if not payload:
             raise HTTPException(status_code=400, detail="Empty payload")
         
@@ -72,7 +65,6 @@ async def webhook_listener(request: Request):
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint"""
     return {"status": "healthy"}
 
 if __name__ == "__main__":

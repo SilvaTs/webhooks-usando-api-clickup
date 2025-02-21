@@ -5,11 +5,10 @@ import logging
 import json
 import sys
 
-# Configurar o logger para mostrar mensagens completas
 logging.basicConfig(
     level=logging.INFO,
     format='%(message)s',
-    stream=sys.stdout  # Usar stdout para evitar truncamento
+    stream=sys.stdout
 )
 logger = logging.getLogger(__name__)
 logger.propagate = False
@@ -25,19 +24,17 @@ class ClickUpClient:
             raise ValueError("Missing CLICKUP_API_TOKEN in environment variables")
 
     def format_and_print_json(self, data, title):
-        """Função auxiliar para imprimir JSON completo"""
         json_str = json.dumps(
             data,
             ensure_ascii=False,
-            separators=(',', ':'),  # Remove espaços
+            separators=(',', ':'),
             default=str
         )
         print(f"\n{title}:")
         print(json_str)
-        print("-" * 80)  # Separador para melhor legibilidade
+        print("-" * 80)
 
     def test_authentication(self):
-        """Test if the API token is valid"""
         headers = {
             "Authorization": self.api_token,
             "accept": "application/json"
@@ -48,7 +45,6 @@ class ClickUpClient:
                 f"{self.base_url}/team",
                 headers=headers
             )
-            # Garantir exibição completa do JSON de autenticação
             self.format_and_print_json(response.json(), "Resposta da autenticação")
             return response.status_code == 200
         except requests.exceptions.RequestException as e:
@@ -56,7 +52,6 @@ class ClickUpClient:
             return False
 
     def get_task_details(self):
-        """Get details of a specific task"""
         headers = {
             "Authorization": self.api_token,
             "accept": "application/json"
@@ -73,7 +68,6 @@ class ClickUpClient:
             response.raise_for_status()
             task_data = response.json()
             
-            # Garantir exibição completa do JSON da tarefa
             self.format_and_print_json(task_data, "Detalhes completos da tarefa")
             return task_data
 
@@ -91,12 +85,6 @@ if __name__ == "__main__":
             
         print("Autenticação bem sucedida. Buscando detalhes da tarefa...")
         task_details = client.get_task_details()
-        # Garantir exibição completa do JSON final
         client.format_and_print_json(task_details, "Detalhes da tarefa obtidos com sucesso")
     except Exception as e:
         print(f"Falha ao obter detalhes da tarefa: {e}")
-        # Formatando o último log também
-        formatted_details = json.dumps(task_details, indent=2, ensure_ascii=False, separators=(',', ': '))
-        logger.info(f"Detalhes da tarefa obtidos com sucesso:\n{formatted_details}")
-    except Exception as e:
-        logger.error(f"Falha ao obter detalhes da tarefa: {e}")
