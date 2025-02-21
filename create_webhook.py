@@ -80,11 +80,13 @@ if __name__ == "__main__":
         
         # Test authentication first
         if not client.test_authentication():
-            logger.error("Authentication failed. Please verify your API token.")
+            logger.error("Falha na autenticação. Verifique seu token API.")
             exit(1)
             
-        logger.info("Authentication successful. Proceeding with task details...")
+        logger.info("Autenticação bem sucedida. Buscando detalhes da tarefa...")
         task_details = client.get_task_details()
-        logger.info(f"Task details retrieved successfully: {task_details}")
+        # Formatando o último log também
+        formatted_details = json.dumps(task_details, indent=2, ensure_ascii=False, separators=(',', ': '))
+        logger.info(f"Detalhes da tarefa obtidos com sucesso:\n{formatted_details}")
     except Exception as e:
-        logger.error(f"Failed to get task details: {e}")
+        logger.error(f"Falha ao obter detalhes da tarefa: {e}")
