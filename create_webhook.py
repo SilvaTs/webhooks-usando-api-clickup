@@ -7,45 +7,38 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class ClickUpWebhook:
+class ClickUpClient:
     def __init__(self):
         load_dotenv()
         self.api_token = os.getenv('CLICKUP_API_TOKEN')
-        self.team_id = os.getenv('TEAM_ID', '9013340838')
-        self.webhook_url = os.getenv('WEBHOOK_URL')
         self.base_url = "https://api.clickup.com/api/v2"
+        self.task_id = "86a6u6bck"  # Specific task ID
         
-    def create_webhook(self):
-        if not all([self.api_token, self.team_id, self.webhook_url]):
-            raise ValueError("Missing required environment variables")
+        if not self.api_token:
+            raise ValueError("Missing CLICKUP_API_TOKEN in environment variables")
 
+    def get_task_details(self):
+        """Get details of a specific task"""
         headers = {
             "Authorization": self.api_token,
             "Content-Type": "application/json"
         }
-        
-        data = {
-            "endpoint": self.webhook_url,
-            "events": ["taskUpdated"],
-            "health_check": True
-        }
 
         try:
-            response = requests.post(
-                f"{self.base_url}/team/{self.team_id}/webhook",
-                json=data,
+            response = requests.get(
+                f"{self.base_url}/task/{self.task_id}",
                 headers=headers
             )
             response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as e:
-            logger.error(f"Error creating webhook: {e}")
+            logger.error(f"Error fetching task details: {e}")
             raise
 
 if __name__ == "__main__":
     try:
-        webhook = ClickUpWebhook()
-        result = webhook.create_webhook()
-        logger.info(f"Webhook created successfully: {result}")
+        client = ClickUpClient()
+        task_details = client.get_task_details()
+        logger.info(f"Task details retrieved successfully: {task_details}")
     except Exception as e:
-        logger.error(f"Failed to create webhook: {e}")
+        logger.error(f"Failed to get task details: {e}")
