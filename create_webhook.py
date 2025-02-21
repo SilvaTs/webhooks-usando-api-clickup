@@ -40,31 +40,34 @@ class ClickUpClient:
     def get_task_details(self):
         """Get details of a specific task"""
         headers = {
-            "Authorization": self.api_token,  # Use token directly as in test_authentication
-            "accept": "application/json"      # Match successful format
+            "Authorization": self.api_token,
+            "accept": "application/json"
         }
 
         try:
-            # First, verify authentication by testing team access
+            # Verificação de autenticação
             test_response = requests.get(
                 f"{self.base_url}/team",
                 headers=headers
             )
-            logger.info(f"Authentication test status code: {test_response.status_code}")
+            logger.info(f"Código de status da autenticação: {test_response.status_code}")
             
             if test_response.status_code == 401:
-                logger.error("Authentication failed. Please check your API token.")
-                raise ValueError("Invalid API token")
+                logger.error("Falha na autenticação. Verifique seu token API.")
+                raise ValueError("Token API inválido")
 
-            # If authentication successful, proceed with task details
+            # Buscar detalhes da tarefa
             response = requests.get(
                 f"{self.base_url}/task/{self.task_id}",
                 headers=headers
             )
-            logger.info(f"Request URL: {self.base_url}/task/{self.task_id}")
-            logger.info(f"Response status code: {response.status_code}")
+            logger.info(f"URL da requisição: {self.base_url}/task/{self.task_id}")
+            logger.info(f"Código de status da resposta: {response.status_code}")
             
             response.raise_for_status()
+            # Formatando o JSON com indentação e mantendo a estrutura original
+            formatted_response = json.dumps(response.json(), indent=2, ensure_ascii=False)
+            logger.info(f"Detalhes da tarefa:\n{formatted_response}")
             return response.json()
         except requests.exceptions.RequestException as e:
             logger.error(f"Error fetching task details: {e}")
