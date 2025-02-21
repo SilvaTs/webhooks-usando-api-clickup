@@ -2,6 +2,7 @@ import requests
 import os
 from dotenv import load_dotenv
 import logging
+import json
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -19,8 +20,8 @@ class ClickUpClient:
     def test_authentication(self):
         """Test if the API token is valid"""
         headers = {
-            "Authorization": self.api_token,  # Remove Bearer prefix, use token directly
-            "accept": "application/json"      # Match curl headers exactly
+            "Authorization": self.api_token,
+            "accept": "application/json"
         }
         
         try:
@@ -29,10 +30,11 @@ class ClickUpClient:
                 headers=headers
             )
             logger.info(f"Auth Response Status: {response.status_code}")
-            logger.info(f"Auth Response: {response.text}")
+            # Formatando o JSON com aspas duplas
+            logger.info(f"Auth Response: {json.dumps(response.json())}")
             return response.status_code == 200
         except requests.exceptions.RequestException as e:
-            logger.error(f"Authentication error: {e}")
+            logger.error(f"Error de autenticação: {e}")
             return False
 
     def get_task_details(self):
