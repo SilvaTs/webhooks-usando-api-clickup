@@ -25,16 +25,15 @@ class ClickUpClient:
             raise ValueError("Missing CLICKUP_API_TOKEN in environment variables")
 
     def format_and_print_json(self, data, title):
-        """Função auxiliar para formatar e imprimir JSON completo"""
-        formatted_json = json.dumps(
+        """Função auxiliar para imprimir JSON completo"""
+        json_str = json.dumps(
             data,
-            indent=2,
             ensure_ascii=False,
-            separators=(',', ': '),
+            separators=(',', ':'),  # Remove espaços
             default=str
         )
         print(f"\n{title}:")
-        print(formatted_json)
+        print(json_str)
         print("-" * 80)  # Separador para melhor legibilidade
 
     def test_authentication(self):
