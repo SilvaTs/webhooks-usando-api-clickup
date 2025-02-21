@@ -29,12 +29,13 @@ class ClickUpClient:
                 f"{self.base_url}/team",
                 headers=headers
             )
-            logger.info(f"Auth Response Status: {response.status_code}")
-            # Formatando o JSON com aspas duplas
-            logger.info(f"Auth Response: {json.dumps(response.json())}")
+            logger.info(f"Código de status da autenticação: {response.status_code}")
+            # Formatando o JSON com aspas duplas e indentação
+            formatted_json = json.dumps(response.json(), indent=2, ensure_ascii=False, separators=(',', ': '))
+            logger.info(f"Resposta da autenticação:\n{formatted_json}")
             return response.status_code == 200
         except requests.exceptions.RequestException as e:
-            logger.error(f"Error de autenticação: {e}")
+            logger.error(f"Erro de autenticação: {e}")
             return False
 
     def get_task_details(self):
@@ -65,9 +66,9 @@ class ClickUpClient:
             logger.info(f"Código de status da resposta: {response.status_code}")
             
             response.raise_for_status()
-            # Formatando o JSON com indentação e mantendo a estrutura original
-            formatted_response = json.dumps(response.json(), indent=2, ensure_ascii=False)
-            logger.info(f"Detalhes da tarefa:\n{formatted_response}")
+            # Formatando o JSON com aspas duplas e indentação correta
+            formatted_json = json.dumps(response.json(), indent=2, ensure_ascii=False, separators=(',', ': '))
+            logger.info(f"Detalhes da tarefa:\n{formatted_json}")
             return response.json()
         except requests.exceptions.RequestException as e:
             logger.error(f"Error fetching task details: {e}")
