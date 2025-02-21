@@ -31,7 +31,6 @@ git clone https://github.com/seu-usuario/webhooks-usando-api-clickup.git
 cd webhooks-usando-api-clickup
 ```
 ```plaintext
-Vou atualizar o README com todas as informações:
 
 ```markdown:c:\Users\daniel.silva\Documents\GitHub\webhooks-usando-api-clickup\README.md
 # Webhook Integration with ClickUp API
@@ -189,12 +188,3 @@ TASK_ID_TO_MONITOR = os.getenv('TASK_ID_TO_MONITOR', "86a6u")
 Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
 ```
 
-Vamos fazer o commit das alterações:
-```bash
-git add README.md
-git commit -m "docs: atualizar README com exemplos de código
-
-- Adicionar exemplos de código dos arquivos principais
-- Melhorar documentação de uso
-- Incluir estrutura detalhada do projeto"
-```
