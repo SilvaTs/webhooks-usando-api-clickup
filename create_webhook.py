@@ -3,7 +3,6 @@ import os
 from dotenv import load_dotenv
 import logging
 
-# Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -17,10 +16,29 @@ class ClickUpClient:
         if not self.api_token:
             raise ValueError("Missing CLICKUP_API_TOKEN in environment variables")
 
+    def test_authentication(self):
+        """Test if the API token is valid"""
+        headers = {
+            "Authorization": f"Bearer {self.api_token}",  # Add Bearer prefix
+            "Content-Type": "application/json"
+        }
+        
+        try:
+            response = requests.get(
+                f"{self.base_url}/team",
+                headers=headers
+            )
+            logger.info(f"Auth Response Status: {response.status_code}")
+            logger.info(f"Auth Response: {response.text}")
+            return response.status_code == 200
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Authentication error: {e}")
+            return False
+
     def get_task_details(self):
         """Get details of a specific task"""
         headers = {
-            "Authorization": self.api_token,  # Removed f-string
+            "Authorization": f"Bearer {self.api_token}",  # Add Bearer prefix
             "Content-Type": "application/json"
         }
 
@@ -49,25 +67,6 @@ class ClickUpClient:
         except requests.exceptions.RequestException as e:
             logger.error(f"Error fetching task details: {e}")
             raise
-
-    def test_authentication(self):
-        """Test if the API token is valid"""
-        headers = {
-            "Authorization": f"pk_{self.api_token}",  # Modified to include 'pk_' prefix
-            "Content-Type": "application/json"
-        }
-        
-        try:
-            response = requests.get(
-                f"{self.base_url}/team",
-                headers=headers
-            )
-            logger.info(f"Auth Response Status: {response.status_code}")
-            logger.info(f"Auth Response: {response.text}")  # Added for debugging
-            return response.status_code == 200
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Authentication error: {e}")
-            return False
 
 if __name__ == "__main__":
     try:
