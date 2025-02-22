@@ -1,18 +1,20 @@
-# Webhook Integration with ClickUp API
+# Webhook Integração com API ClickUp 
 
 Este projeto implementa uma integração com a API do ClickUp para monitorar e processar eventos de tarefas em tempo real através de webhooks.
 
 ## Sobre
 
-O projeto consiste em dois componentes principais:
+O projeto consiste em três componentes principais:
 - Um cliente Python para interagir com a API do ClickUp
 - Um servidor FastAPI para processar webhooks recebidos
+- Documentação Swagger/OpenAPI para a API
 
 ### Principais Funcionalidades
 - Autenticação com a API do ClickUp
 - Busca de detalhes de tarefas específicas
 - Processamento de eventos via webhook
 - Monitoramento de tarefas específicas
+- Documentação interativa via Swagger UI
 - Logging detalhado de eventos e respostas
 
 ## Requisitos
@@ -22,39 +24,9 @@ O projeto consiste em dois componentes principais:
 - Uvicorn
 - python-dotenv
 - requests
-
-## Instalação
-
-1. Clone o repositório:
-```bash
-git clone https://github.com/seu-usuario/webhooks-usando-api-clickup.git
-cd webhooks-usando-api-clickup
-```
-
-# Webhook Integration with ClickUp API
-
-Este projeto implementa uma integração com a API do ClickUp para monitorar e processar eventos de tarefas em tempo real através de webhooks.
-
-## Sobre
-
-O projeto consiste em dois componentes principais:
-- Um cliente Python para interagir com a API do ClickUp
-- Um servidor FastAPI para processar webhooks recebidos
-
-### Principais Funcionalidades
-- Autenticação com a API do ClickUp
-- Busca de detalhes de tarefas específicas
-- Processamento de eventos via webhook
-- Monitoramento de tarefas específicas
-- Logging detalhado de eventos e respostas
-
-## Requisitos
-
-- Python 3.x
-- FastAPI
-- Uvicorn
-- python-dotenv
-- requests
+- flask
+- flask-swagger-ui
+- pyyaml
 
 ## Instalação
 
@@ -76,9 +48,9 @@ CLICKUP_API_TOKEN=seu_token_aqui
 TASK_ID_TO_MONITOR=id_da_tarefa
 ```
 
-## Uso
+## Executando a Aplicação
 
-### Cliente ClickUp
+### 1. Cliente ClickUp
 
 Para usar o cliente da API:
 ```python
@@ -88,9 +60,9 @@ client = ClickUpClient()
 task_details = client.get_task_details()
 ```
 
-### Servidor Webhook
+### 2. Servidor Principal (FastAPI)
 
-Para iniciar o servidor:
+Inicie o servidor principal:
 ```bash
 python app.py
 ```
@@ -99,12 +71,32 @@ O servidor estará disponível em `http://localhost:8000` com os endpoints:
 - `POST /webhook`: Recebe eventos do ClickUp
 - `GET /health`: Endpoint de verificação de saúde
 
+### 3. Documentação Swagger
+
+1. Inicie o servidor Swagger:
+```bash
+python swagger_server.py
+```
+
+2. Acesse a documentação no navegador:
+```
+http://localhost:3000/api-docs
+```
+
+Na interface do Swagger UI você pode:
+- Visualizar todos os endpoints disponíveis
+- Testar as requisições
+- Explorar os modelos de dados
+- Ver exemplos de requisições e respostas
+
 ## Estrutura do Projeto
 
 ```
 webhooks-usando-api-clickup/
 ├── create_webhook.py    # Cliente da API ClickUp
 ├── app.py              # Servidor FastAPI
+├── swagger_server.py   # Servidor da documentação Swagger
+├── api-docs.yaml      # Especificação OpenAPI/Swagger
 ├── .env               # Variáveis de ambiente
 └── README.md          # Esta documentação
 ```
@@ -124,64 +116,32 @@ O projeto utiliza logging configurado para mostrar:
 - Tratamento de exceções HTTP
 - Logging de erros detalhado
 
-## Exemplos de Código
+## Troubleshooting
 
-### create_webhook.py
-```python
-import requests
-import os
-from dotenv import load_dotenv
-import logging
-import json
-import sys
+### Problemas Comuns
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(message)s',
-    stream=sys.stdout
-)
-logger = logging.getLogger(__name__)
-logger.propagate = False
+1. **Erro ao Iniciar o Swagger**
+   - Verifique se todas as dependências estão instaladas
+   - Confirme se a porta 3000 está disponível
+   - Certifique-se que o arquivo api-docs.yaml existe no diretório
 
-class ClickUpClient:
-    def __init__(self):
-        load_dotenv()
-        self.api_token = os.getenv('CLICKUP_API_TOKEN')
-        self.base_url = "https://api.clickup.com/api/v2"
-        self.task_id = "86a6u6bck"
-```
+2. **Falha na Autenticação**
+   - Verifique se o CLICKUP_API_TOKEN está correto no .env
+   - Teste o token diretamente na API do ClickUp
 
-### app.py
-```python
-from fastapi import FastAPI, Request, HTTPException
-from fastapi.responses import JSONResponse
-import logging
-from typing import Dict, Any
-import os
-from dotenv import load_dotenv
-
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
-
-load_dotenv()
-
-app = FastAPI(title="ClickUp Webhook Processor")
-
-TASK_ID_TO_MONITOR = os.getenv('TASK_ID_TO_MONITOR', "86a6u")
-```
+3. **Servidor não Inicia**
+   - Confirme que todas as portas necessárias estão livres
+   - Verifique se o Python 3.x está instalado corretamente
+   - Confirme que todas as dependências foram instaladas
 
 ## Contribuindo
 
 1. Faça um fork do projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
+2. Crie uma branch para sua feature (`git checkout -b feature/NovaFuncionalidade`)
+3. Commit suas mudanças (`git commit -m 'Adiciona nova funcionalidade'`)
+4. Push para a branch (`git push origin feature/NovaFuncionalidade`)
 5. Abra um Pull Request
 
 ## Licença
 
 Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
-```
