@@ -30,9 +30,7 @@ O projeto consiste em dois componentes principais:
 git clone https://github.com/seu-usuario/webhooks-usando-api-clickup.git
 cd webhooks-usando-api-clickup
 ```
-```plaintext
 
-```markdown:c:\Users\daniel.silva\Documents\GitHub\webhooks-usando-api-clickup\README.md
 # Webhook Integration with ClickUp API
 
 Este projeto implementa uma integração com a API do ClickUp para monitorar e processar eventos de tarefas em tempo real através de webhooks.

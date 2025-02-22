@@ -1,11 +1,16 @@
 from flask import Flask, send_from_directory
 import yaml
 from flask_swagger_ui import get_swaggerui_blueprint
+import os
 
 app = Flask(__name__)
 
+# Get the current directory path
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
 # Load YAML file
-with open('api-docs.yaml', 'r', encoding='utf-8') as file:
+yaml_path = os.path.join(current_dir, 'api-docs.yaml')
+with open(yaml_path, 'r', encoding='utf-8') as file:
     swagger_data = yaml.safe_load(file)
 
 # Configure Swagger UI
@@ -24,7 +29,7 @@ app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL)
 
 @app.route('/static/api-docs.yaml')
 def send_yaml():
-    return send_from_directory('.', 'api-docs.yaml')
+    return send_from_directory(current_dir, 'api-docs.yaml')
 
 if __name__ == '__main__':
     app.run(port=3000, debug=True)
