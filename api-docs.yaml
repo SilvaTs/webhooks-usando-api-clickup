@@ -1,0 +1,98 @@
+openapi: 3.0.0
+info:
+  title: ClickUp API Client
+  version: 1.0.0
+  description: Cliente Python para interação com a API do ClickUp
+  contact:
+    name: API Support
+    email: support@example.com
+
+servers:
+  - url: https://api.clickup.com/api/v2
+    description: ClickUp API v2
+
+security:
+  - ApiKeyAuth: []
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Token de API do ClickUp
+
+  schemas:
+    Task:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "86a6u6bck"
+        name:
+          type: string
+          example: "Implementar nova funcionalidade"
+        description:
+          type: string
+          example: "Descrição detalhada da tarefa"
+        status:
+          type: object
+          properties:
+            status:
+              type: string
+              example: "em andamento"
+    
+    Team:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "123456"
+        name:
+          type: string
+          example: "Minha Equipe"
+
+paths:
+  /team:
+    get:
+      summary: Testa autenticação e retorna informações da equipe
+      operationId: testAuthentication
+      responses:
+        '200':
+          description: Autenticação bem-sucedida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        '401':
+          description: Token de API inválido
+        '403':
+          description: Acesso negado
+        '500':
+          description: Erro interno do servidor
+
+  /task/{task_id}:
+    get:
+      summary: Obtém detalhes de uma tarefa específica
+      operationId: getTaskDetails
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "86a6u6bck"
+          description: ID da tarefa no ClickUp
+      responses:
+        '200':
+          description: Detalhes da tarefa recuperados com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '401':
+          description: Token de API inválido
+        '404':
+          description: Tarefa não encontrada
+        '500':
+          description: Erro interno do servidor
