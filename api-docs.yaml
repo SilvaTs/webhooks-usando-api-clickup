@@ -63,8 +63,7 @@ paths:
           required: true
           schema:
             type: string
-          example: "123456"
-          description: ID da equipe no ClickUp
+          description: "The unique identifier of the team to query"
 
       responses:
         '200':
@@ -90,8 +89,7 @@ paths:
           required: true
           schema:
             type: string
-          example: "86a6u6bck"
-          description: ID da tarefa no ClickUp
+          description: "The unique identifier of the task to retrieve"
 
       responses:
         '200':
