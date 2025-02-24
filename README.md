@@ -107,11 +107,7 @@ O projeto utiliza logging configurado para mostrar:
    - Confirme se a porta 3000 está disponível
    - Certifique-se que o arquivo api-docs.yaml existe no diretório
 
-2. **Falha na Autenticação**
-   - Verifique se o CLICKUP_API_TOKEN está correto no .env
-   - Teste o token diretamente na API do ClickUp
-
-3. **Servidor não Inicia**
+2. **Servidor não Inicia**
    - Confirme que todas as portas necessárias estão livres
    - Verifique se o Python 3.x está instalado corretamente
    - Confirme que todas as dependências foram instaladas
