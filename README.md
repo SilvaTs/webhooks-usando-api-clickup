@@ -32,7 +32,7 @@ O projeto consiste em três componentes principais:
 
 1. Clone o repositório:
 ```bash
-git clone https://github.com/seu-usuario/webhooks-usando-api-clickup.git
+git clone https://github.com/SilvaTs/webhooks-usando-api-clickup.git
 cd webhooks-usando-api-clickup
 ```
 
