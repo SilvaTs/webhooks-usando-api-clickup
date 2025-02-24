@@ -1,9 +1,12 @@
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 import logging
-from typing import Dict, Any
+from typing import Dict, Any, List
 import os
 from dotenv import load_dotenv
+import requests
 
 logging.basicConfig(
     level=logging.INFO,
@@ -13,86 +16,98 @@ logger = logging.getLogger(__name__)
 
 load_dotenv()
 
-app = FastAPI(title="ClickUp Webhook Processor")
+app = FastAPI(
+    title="ClickUp Webhook Manager",
+    description="API for managing ClickUp webhooks",
+    version="1.0.0"
+)
 
-# Store monitored task ID in memory
-monitored_task_id = None
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
 
-class WebhookProcessor:
-    @staticmethod
-    async def process_event(payload: Dict[Any, Any]) -> None:
-        task_data = payload.get("task", {})
-        event_type = payload.get("event")
-        
-        logger.info(f"Processing {event_type} event for task {task_data.get('id')}")
+CLICKUP_API_TOKEN = os.getenv('CLICKUP_API_TOKEN')
+if not CLICKUP_API_TOKEN:
+    raise ValueError("CLICKUP_API_TOKEN environment variable is required")
 
-@app.get("/")
-async def root():
-    return {
-        "message": "ClickUp Webhook API",
-        "endpoints": {
-            "/webhook": "POST - Receive ClickUp webhook events",
-            "/health": "GET - Check API health status",
-            "/configure/{task_id}": "POST - Configure task monitoring"
-        }
-    }
+class WebhookCreate(BaseModel):
+    endpoint: str
+    description: str = None
 
-@app.post("/webhook")
-async def webhook_listener(request: Request):
+class Webhook(BaseModel):
+    id: str
+    endpoint: str
+    client_id: str
+    workspace_id: str
+    user_id: str
+    events: List[str]
+
+class WebhookList(BaseModel):
+    webhooks: List[Webhook]
+
+@app.post("/team/{team_id}/webhook", response_model=Webhook, tags=["webhooks"],
+    summary="Create a new webhook",
+    description="Creates a new webhook for the specified team")
+async def create_webhook(team_id: int, webhook: WebhookCreate):
     try:
-        payload = await request.json()
+        headers = {
+            "Authorization": CLICKUP_API_TOKEN,
+            "Content-Type": "application/json"
+        }
         
-        if not payload:
-            raise HTTPException(status_code=400, detail="Empty payload")
+        response = requests.post(
+            f"https://api.clickup.com/api/v2/team/{team_id}/webhook",
+            headers=headers,
+            json={"endpoint": webhook.endpoint, "description": webhook.description}
+        )
         
-        task_id = payload.get("task", {}).get("id")
-        event_type = payload.get("event")
-
-        if not task_id or not event_type:
-            raise HTTPException(status_code=400, detail="Missing task ID or event type")
-
-        if task_id == monitored_task_id:
-            await WebhookProcessor.process_event(payload)
-            logger.info(f"Successfully processed {event_type} event for task {task_id}")
-            return JSONResponse(
-                content={
-                    "status": "success",
-                    "message": f"Event {event_type} processed for task {task_id}"
-                }
-            )
-        
-        return JSONResponse(
-            content={
-                "status": "skipped",
-                "message": "Event not for monitored task"
-            }
+        response.raise_for_status()
+        return response.json()
+    
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Error creating webhook: {str(e)}")
+        raise HTTPException(
+            status_code=response.status_code if hasattr(response, 'status_code') else 500,
+            detail=str(e)
         )
 
-    except HTTPException as he:
-        logger.error(f"HTTP Error: {str(he)}")
-        raise
-    except Exception as e:
-        logger.error(f"Error processing webhook: {str(e)}")
-        raise HTTPException(status_code=500, detail="Internal server error")
-
-@app.post("/configure/{task_id}")
-async def configure_monitored_task(task_id: str):
-    global monitored_task_id
-    monitored_task_id = task_id
-    logger.info(f"Now monitoring task: {task_id}")
-    return {"status": "success", "monitored_task": task_id}
-
-@app.get("/webhook")
-async def webhook_get():
-    raise HTTPException(
-        status_code=405,
-        detail="Method Not Allowed. Use POST for webhook events"
-    )
-
-@app.get("/health")
-async def health_check():
-    return {"status": "healthy", "monitored_task": monitored_task_id}
+@app.get("/team/{team_id}/webhook", response_model=WebhookList, tags=["webhooks"],
+    summary="List team webhooks",
+    description="Retrieves all webhooks for the specified team")
+async def get_webhooks(team_id: int):
+    try:
+        headers = {
+            "Authorization": CLICKUP_API_TOKEN,
+            "Content-Type": "application/json"
+        }
+        
+        response = requests.get(
+            f"https://api.clickup.com/api/v2/team/{team_id}/webhook",
+            headers=headers
+        )
+        
+        response.raise_for_status()
+        webhooks_data = response.json()
+        return {"webhooks": webhooks_data.get("webhooks", [])}
+    
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Error retrieving webhooks: {str(e)}")
+        raise HTTPException(
+            status_code=response.status_code if hasattr(response, 'status_code') else 500,
+            detail=str(e)
+        )
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    import argparse
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--port', type=int, default=8000, help='Port to run the server on')
+    args = parser.parse_args()
+    
+    uvicorn.run(app, host="0.0.0.0", port=args.port)

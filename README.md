@@ -1,19 +1,17 @@
 # Webhook Integração com API ClickUp 
 
-Este projeto implementa uma integração com a API do ClickUp para monitorar e processar eventos de tarefas em tempo real através de webhooks.
+Este projeto implementa uma integração com a API do ClickUp para gerenciar webhooks e processar eventos em tempo real.
 
 ## Sobre
 
 O projeto consiste em três componentes principais:
+- Um servidor FastAPI para gerenciar webhooks do ClickUp
 - Um cliente Python para interagir com a API do ClickUp
-- Um servidor FastAPI para processar webhooks recebidos
 - Documentação Swagger/OpenAPI para a API
 
 ### Principais Funcionalidades
+- Criação e listagem de webhooks
 - Autenticação com a API do ClickUp
-- Busca de detalhes de tarefas específicas
-- Processamento de eventos via webhook
-- Monitoramento de tarefas específicas
 - Documentação interativa via Swagger UI
 - Logging detalhado de eventos e respostas
 
@@ -43,14 +41,11 @@ pip install -r requirements.txt
 
 ## Executando a Aplicação
 
-### 1. Cliente ClickUp
+### 1. Servidor FastAPI
 
-Para usar o cliente da API:
-```python
-from create_webhook import ClickUpClient
-
-client = ClickUpClient()
-task_details = client.get_task_details()
+Inicie o servidor FastAPI:
+```bash
+uvicorn app:app --reload
 ```
 
 ### 2. Documentação Swagger
@@ -66,10 +61,24 @@ http://localhost:3000/api-docs
 ```
 
 Na interface do Swagger UI você pode:
-- Visualizar todos os endpoints disponíveis
-- Testar as requisições
-- Explorar os modelos de dados
+- Visualizar e testar os endpoints de webhooks
+- Criar novos webhooks
+- Listar webhooks existentes
 - Ver exemplos de requisições e respostas
+
+## Endpoints de Webhook
+
+### Criar Webhook
+```
+POST /team/{team_id}/webhook
+```
+Cria um novo webhook para o time especificado.
+
+### Listar Webhooks
+```
+GET /team/{team_id}/webhook
+```
+Retorna todos os webhooks do time especificado.
 
 ## Estrutura do Projeto
 

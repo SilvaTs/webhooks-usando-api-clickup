@@ -1,15 +1,15 @@
 openapi: 3.0.0
 info:
-  title: ClickUp API Client
+  title: ClickUp Webhook Manager
   version: 1.0.0
-  description: Cliente Python para interação com a API do ClickUp
+  description: API for managing ClickUp webhooks
   contact:
     name: API Support
     email: support@example.com
 
 servers:
-  - url: https://api.clickup.com/api/v2
-    description: ClickUp API v2
+  - url: http://localhost:8000
+    description: Local Development Server
 
 security:
   - ApiKeyAuth: []
@@ -23,84 +23,91 @@ components:
       description: Token de API do ClickUp
 
   schemas:
-    Task:
+    WebhookCreate:
       type: object
+      required:
+        - endpoint
       properties:
-        id:
+        endpoint:
           type: string
-          example: "86a6u6bck"
-        name:
-          type: string
-          example: "Implementar nova funcionalidade"
+          example: "https://your-domain.com/webhook"
         description:
           type: string
-          example: "Descrição detalhada da tarefa"
-        status:
-          type: object
-          properties:
-            status:
-              type: string
-              example: "em andamento"
-    
-    Team:
+          example: "Webhook for task updates"
+
+    Webhook:
       type: object
       properties:
         id:
           type: string
-          example: "123456"
-        name:
+          example: "webhook_123"
+        endpoint:
           type: string
-          example: "Minha Equipe"
+          example: "https://your-domain.com/webhook"
+        client_id:
+          type: string
+          example: "client_123"
+        workspace_id:
+          type: string
+          example: "workspace_123"
+        user_id:
+          type: string
+          example: "user_123"
+        events:
+          type: array
+          items:
+            type: string
+          example: ["taskCreated", "taskUpdated"]
+
+    WebhookList:
+      type: object
+      properties:
+        webhooks:
+          type: array
+          items:
+            $ref: '#/components/schemas/Webhook'
 
 paths:
-  /team:
-    get:
-      summary: Testa autenticação e retorna informações da equipe
-      operationId: testAuthentication
+  /team/{team_id}/webhook:
+    post:
+      summary: Create a new webhook
+      description: Creates a new webhook for the specified team
+      tags:
+        - webhooks
       parameters:
         - name: team_id
-          in: query
-          required: true
-          schema:
-            type: string
-          description: "The unique identifier of the team to query"
-
-      responses:
-        '200':
-          description: Autenticação bem-sucedida
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Team'
-        '401':
-          description: Token de API inválido
-        '403':
-          description: Acesso negado
-        '500':
-          description: Erro interno do servidor
-
-  /task/{task_id}:
-    get:
-      summary: Obtém detalhes de uma tarefa específica
-      operationId: getTaskDetails
-      parameters:
-        - name: task_id
           in: path
           required: true
           schema:
-            type: string
-          description: "The unique identifier of the task to retrieve"
-
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebhookCreate'
       responses:
         '200':
-          description: Detalhes da tarefa recuperados com sucesso
+          description: Webhook created successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Task'
-        '401':
-          description: Token de API inválido
-        '404':
-          description: Tarefa não encontrada
-        '500':
-          description: Erro interno do servidor
+                $ref: '#/components/schemas/Webhook'
+    get:
+      summary: List team webhooks
+      description: Retrieves all webhooks for the specified team
+      tags:
+        - webhooks
+      parameters:
+        - name: team_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of webhooks
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookList'
