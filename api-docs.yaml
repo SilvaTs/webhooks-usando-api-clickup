@@ -57,6 +57,15 @@ paths:
     get:
       summary: Testa autenticação e retorna informações da equipe
       operationId: testAuthentication
+      parameters:
+        - name: team_id
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "123456"
+          description: ID da equipe no ClickUp
+
       responses:
         '200':
           description: Autenticação bem-sucedida
@@ -83,6 +92,7 @@ paths:
             type: string
           example: "86a6u6bck"
           description: ID da tarefa no ClickUp
+
       responses:
         '200':
           description: Detalhes da tarefa recuperados com sucesso

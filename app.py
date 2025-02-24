@@ -15,7 +15,8 @@ load_dotenv()
 
 app = FastAPI(title="ClickUp Webhook Processor")
 
-TASK_ID_TO_MONITOR = os.getenv('TASK_ID_TO_MONITOR', "86a6u")
+# Store monitored task ID in memory
+monitored_task_id = None
 
 class WebhookProcessor:
     @staticmethod
@@ -24,6 +25,17 @@ class WebhookProcessor:
         event_type = payload.get("event")
         
         logger.info(f"Processing {event_type} event for task {task_data.get('id')}")
+
+@app.get("/")
+async def root():
+    return {
+        "message": "ClickUp Webhook API",
+        "endpoints": {
+            "/webhook": "POST - Receive ClickUp webhook events",
+            "/health": "GET - Check API health status",
+            "/configure/{task_id}": "POST - Configure task monitoring"
+        }
+    }
 
 @app.post("/webhook")
 async def webhook_listener(request: Request):
@@ -39,7 +51,7 @@ async def webhook_listener(request: Request):
         if not task_id or not event_type:
             raise HTTPException(status_code=400, detail="Missing task ID or event type")
 
-        if task_id == TASK_ID_TO_MONITOR:
+        if task_id == monitored_task_id:
             await WebhookProcessor.process_event(payload)
             logger.info(f"Successfully processed {event_type} event for task {task_id}")
             return JSONResponse(
@@ -63,9 +75,23 @@ async def webhook_listener(request: Request):
         logger.error(f"Error processing webhook: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
+@app.post("/configure/{task_id}")
+async def configure_monitored_task(task_id: str):
+    global monitored_task_id
+    monitored_task_id = task_id
+    logger.info(f"Now monitoring task: {task_id}")
+    return {"status": "success", "monitored_task": task_id}
+
+@app.get("/webhook")
+async def webhook_get():
+    raise HTTPException(
+        status_code=405,
+        detail="Method Not Allowed. Use POST for webhook events"
+    )
+
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy"}
+    return {"status": "healthy", "monitored_task": monitored_task_id}
 
 if __name__ == "__main__":
     import uvicorn

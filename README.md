@@ -41,13 +41,6 @@ cd webhooks-usando-api-clickup
 pip install -r requirements.txt
 ```
 
-3. Configure as variáveis de ambiente:
-Crie um arquivo `.env` com:
-```env
-CLICKUP_API_TOKEN=seu_token_aqui
-TASK_ID_TO_MONITOR=id_da_tarefa
-```
-
 ## Executando a Aplicação
 
 ### 1. Cliente ClickUp
@@ -60,18 +53,7 @@ client = ClickUpClient()
 task_details = client.get_task_details()
 ```
 
-### 2. Servidor Principal (FastAPI)
-
-Inicie o servidor principal:
-```bash
-python app.py
-```
-
-O servidor estará disponível em `http://localhost:8000` com os endpoints:
-- `POST /webhook`: Recebe eventos do ClickUp
-- `GET /health`: Endpoint de verificação de saúde
-
-### 3. Documentação Swagger
+### 2. Documentação Swagger
 
 1. Inicie o servidor Swagger:
 ```bash
