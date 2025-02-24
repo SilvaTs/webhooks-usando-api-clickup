@@ -24,13 +24,12 @@ app = FastAPI(
     version=API_VERSION
 )
 
-# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],  # Allows all methods
-    allow_headers=["*"],  # Allows all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 CLICKUP_API_TOKEN = os.getenv('CLICKUP_API_TOKEN')
@@ -52,9 +51,7 @@ class Webhook(BaseModel):
 class WebhookList(BaseModel):
     webhooks: List[Webhook]
 
-@app.post("/team/{team_id}/webhook", response_model=Webhook, tags=["webhooks"],
-    summary="Create a new webhook",
-    description="Creates a new webhook for the specified team")
+@app.post("/team/{team_id}/webhook", response_model=Webhook, tags=["webhooks"])
 async def create_webhook(team_id: int, webhook: WebhookCreate):
     try:
         async with ClickUpClient(api_token=CLICKUP_API_TOKEN) as client:
@@ -73,9 +70,7 @@ async def create_webhook(team_id: int, webhook: WebhookCreate):
             detail=str(e)
         )
 
-@app.get("/team/{team_id}/webhook", response_model=WebhookList, tags=["webhooks"],
-    summary="List team webhooks",
-    description="Retrieves all webhooks for the specified team")
+@app.get("/team/{team_id}/webhook", response_model=WebhookList, tags=["webhooks"])
 async def get_webhooks(team_id: int):
     try:
         async with ClickUpClient(api_token=CLICKUP_API_TOKEN) as client:
@@ -97,7 +92,7 @@ if __name__ == "__main__":
     import argparse
     
     parser = argparse.ArgumentParser()
-    parser.add_argument('--port', type=int, default=DEFAULT_PORT, help='Port to run the server on')
+    parser.add_argument('--port', type=int, default=DEFAULT_PORT)
     args = parser.parse_args()
     
     uvicorn.run(app, host=DEFAULT_HOST, port=args.port)
