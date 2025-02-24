@@ -30,7 +30,7 @@ components:
       properties:
         endpoint:
           type: string
-          example: "https://your-domain.com/webhook"
+          example: "https://localhost:8000/team/{team_id}/webhook"
         description:
           type: string
           example: "Webhook for task updates"
@@ -43,7 +43,7 @@ components:
           example: "webhook_123"
         endpoint:
           type: string
-          example: "https://your-domain.com/webhook"
+          example: "https://localhost:8000/team/{team_id}/webhook"
         client_id:
           type: string
           example: "client_123"

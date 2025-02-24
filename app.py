@@ -6,20 +6,22 @@ import logging
 from typing import Dict, Any, List
 import os
 from dotenv import load_dotenv
-import requests
+import aiohttp
+from create_webhook import ClickUpClient
+from config import CLICKUP_API_TOKEN, API_TITLE, API_DESCRIPTION, API_VERSION, API_LOG_FORMAT, DEFAULT_HOST, DEFAULT_PORT
 
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    format=API_LOG_FORMAT
 )
 logger = logging.getLogger(__name__)
 
 load_dotenv()
 
 app = FastAPI(
-    title="ClickUp Webhook Manager",
-    description="API for managing ClickUp webhooks",
-    version="1.0.0"
+    title=API_TITLE,
+    description=API_DESCRIPTION,
+    version=API_VERSION
 )
 
 # Add CORS middleware
@@ -55,24 +57,19 @@ class WebhookList(BaseModel):
     description="Creates a new webhook for the specified team")
 async def create_webhook(team_id: int, webhook: WebhookCreate):
     try:
-        headers = {
-            "Authorization": CLICKUP_API_TOKEN,
-            "Content-Type": "application/json"
-        }
-        
-        response = requests.post(
-            f"https://api.clickup.com/api/v2/team/{team_id}/webhook",
-            headers=headers,
-            json={"endpoint": webhook.endpoint, "description": webhook.description}
-        )
-        
-        response.raise_for_status()
-        return response.json()
+        async with ClickUpClient(api_token=CLICKUP_API_TOKEN) as client:
+            url = f"{client.base_url}/team/{team_id}/webhook"
+            async with client._session.post(
+                url,
+                json={"endpoint": webhook.endpoint, "description": webhook.description}
+            ) as response:
+                response.raise_for_status()
+                return await response.json()
     
-    except requests.exceptions.RequestException as e:
+    except aiohttp.ClientError as e:
         logger.error(f"Error creating webhook: {str(e)}")
         raise HTTPException(
-            status_code=response.status_code if hasattr(response, 'status_code') else 500,
+            status_code=getattr(e, 'status', 500),
             detail=str(e)
         )
 
@@ -81,24 +78,17 @@ async def create_webhook(team_id: int, webhook: WebhookCreate):
     description="Retrieves all webhooks for the specified team")
 async def get_webhooks(team_id: int):
     try:
-        headers = {
-            "Authorization": CLICKUP_API_TOKEN,
-            "Content-Type": "application/json"
-        }
-        
-        response = requests.get(
-            f"https://api.clickup.com/api/v2/team/{team_id}/webhook",
-            headers=headers
-        )
-        
-        response.raise_for_status()
-        webhooks_data = response.json()
-        return {"webhooks": webhooks_data.get("webhooks", [])}
+        async with ClickUpClient(api_token=CLICKUP_API_TOKEN) as client:
+            url = f"{client.base_url}/team/{team_id}/webhook"
+            async with client._session.get(url) as response:
+                response.raise_for_status()
+                webhooks_data = await response.json()
+                return {"webhooks": webhooks_data.get("webhooks", [])}
     
-    except requests.exceptions.RequestException as e:
+    except aiohttp.ClientError as e:
         logger.error(f"Error retrieving webhooks: {str(e)}")
         raise HTTPException(
-            status_code=response.status_code if hasattr(response, 'status_code') else 500,
+            status_code=getattr(e, 'status', 500),
             detail=str(e)
         )
 
@@ -107,7 +97,7 @@ if __name__ == "__main__":
     import argparse
     
     parser = argparse.ArgumentParser()
-    parser.add_argument('--port', type=int, default=8000, help='Port to run the server on')
+    parser.add_argument('--port', type=int, default=DEFAULT_PORT, help='Port to run the server on')
     args = parser.parse_args()
     
-    uvicorn.run(app, host="0.0.0.0", port=args.port)
+    uvicorn.run(app, host=DEFAULT_HOST, port=args.port)
