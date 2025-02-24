@@ -30,7 +30,7 @@ class ClickUpClient:
     async def __aenter__(self):
         self._session = aiohttp.ClientSession(
             headers={"Authorization": self.api_token},
-            connector=aiohttp.TCPConnector(limit=MAX_CONNECTIONS)  # Connection pool size
+            connector=aiohttp.TCPConnector(limit=MAX_CONNECTIONS)
         )
         return self
 
@@ -83,7 +83,6 @@ class ClickUpClient:
 if __name__ == "__main__":
     async def main():
         try:
-            # Example of using the client with parameters
             api_token = input("Enter your ClickUp API token: ")
             team_id = input("Enter your team ID (optional): ")
             task_id = input("Enter the task ID: ")
